@@ -20,6 +20,7 @@ builder.Services.AddSingleton<ISabaService, SabaService>();
 builder.Services.AddMemoryCache();
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(SabaController).Assembly));
 builder.Services.AddHealthChecks();
+builder.Services.AddCors();
 
 var app = builder.Build();
 
@@ -29,6 +30,12 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors(x => x
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    .SetIsOriginAllowed(origin => true)
+    .AllowCredentials());
 
 app.UseHttpsRedirection();
 

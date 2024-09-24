@@ -5,13 +5,13 @@ using S1.SabaSports.OddsDirectAPI.Services;
 
 namespace S1.SabaSports.OddsDirectAPI.Handlers;
 
-public class SabaHandler(ISabaService sabaService, IApiClient apiClient) : IRequestHandler<GetHighLightMatchRequest, Matches>
+public class SabaHandler(ISabaService sabaService, IApiClient apiClient) : IRequestHandler<GetHighLightMatchRequest, IEnumerable<Match>>
 {
-    public async Task<Matches> Handle(GetHighLightMatchRequest request, CancellationToken cancellationToken)
+    public async Task<IEnumerable<Match>> Handle(GetHighLightMatchRequest request, CancellationToken cancellationToken)
     {
         var token = await sabaService.LoginSabaAsync(request.BrandId);
 
-        var results = await sabaService.GetHighLightMatchAsync(token);
+        var results = await sabaService.GetHighLightMatchAsync(request, token);
 
         return results;
     }
