@@ -1,9 +1,9 @@
 ﻿FROM hub.lumigame.com/base/dotnet/core/sdk:8.0 AS build
 WORKDIR /src
-COPY ["S1.SabaSports.OddsDirectAPI.csproj", "."]
-RUN dotnet restore S1.SabaSports.OddsDirectAPI.csproj
+COPY ["S1.SabaSports.OddsDirectAPI/S1.SabaSports.OddsDirectAPI.csproj", "S1.SabaSports.OddsDirectAPI/"]
+RUN dotnet restore ./S1.SabaSports.OddsDirectAPI/S1.SabaSports.OddsDirectAPI.csproj
 COPY . .
-WORKDIR "/src"
+WORKDIR "/src/S1.SabaSports.OddsDirectAPI"
 RUN dotnet build "./S1.SabaSports.OddsDirectAPI.csproj" -c Release -o /app/build
 
 FROM build AS publish

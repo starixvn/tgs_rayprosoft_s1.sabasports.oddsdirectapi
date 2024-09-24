@@ -8,6 +8,13 @@
       "sslPort": 44308
     }
   },
+  "Docker": {
+    "commandName": "Docker",
+    "launchBrowser": true,
+    "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/health",
+    "publishAllPorts": true,
+    "useSSL": true
+  },
   "profiles": {
     "http": {
       "commandName": "Project",
