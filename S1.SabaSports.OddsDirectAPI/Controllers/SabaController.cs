@@ -13,10 +13,10 @@ public class SabaController(IMediator mediator) : ControllerBase
 {
 
     [HttpGet("event")]
-    public async Task<IActionResult> Get(int betType, int top)
+    public async Task<IActionResult> Get(int sportType, int betType, int top, string from, string to)
     {
         var brandId = HttpContext.Items.GetBrandId();
-        var request = new GetHighLightMatchRequest { BrandId = brandId, Bettype = betType, Top = top };
+        var request = new GetHighLightMatchRequest { SportType = sportType, BrandId = brandId, Bettype = betType, Top = top, From = from, To = to };
         return Ok(await mediator.Send(request).ConfigureAwait(false));
     }
 }

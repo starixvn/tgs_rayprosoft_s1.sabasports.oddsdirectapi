@@ -7,7 +7,13 @@ public class GetHighLightMatchRequest : IRequest<IEnumerable<Match>>
 {
     public Guid BrandId { get; set; }
 
+    public int SportType { get; set; }
+
     public int Bettype { get; set; }
 
     public int Top { get; set; }
+
+    public string From { get; set; }
+
+    public string To { get; set; }
 }

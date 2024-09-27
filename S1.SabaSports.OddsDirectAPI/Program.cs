@@ -38,7 +38,6 @@ app.UseCors(x => x
     .AllowCredentials());
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
 
 app.MapHealthChecks("/health");
