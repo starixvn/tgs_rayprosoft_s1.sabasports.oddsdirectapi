@@ -9,4 +9,6 @@ public class SabaSettings
     public string VendorMemberId { get; init; } = default!;
 
     public int TokenExpiration { get; init; } = default!;
+
+    public int DataExpiration { get; init; } = default!;
 }
