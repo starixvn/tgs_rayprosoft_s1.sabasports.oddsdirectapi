@@ -16,4 +16,6 @@ public class GetHighLightMatchRequest : IRequest<IEnumerable<Match>>
     public string From { get; set; }
 
     public string To { get; set; }
+
+    public bool IsLive { get; set; }
 }

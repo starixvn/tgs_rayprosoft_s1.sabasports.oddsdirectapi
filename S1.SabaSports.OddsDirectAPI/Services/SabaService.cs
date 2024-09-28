@@ -34,7 +34,7 @@ public class SabaService(IOptions<SabaSettings> options, IMemoryCache memoryCach
 
     public async Task<IEnumerable<Match>> GetHighLightMatchAsync(GetHighLightMatchRequest request, TokenInfo token)
     {
-        var hashKey = HashCode.Combine(request.SportType, request.Bettype, request.Top, request.From, request.To);
+        var hashKey = HashCode.Combine(request.SportType, request.Bettype, request.IsLive, request.Top, request.From, request.To);
         var matches = await memoryCache.GetOrCreateAsync($"{request.BrandId}-{hashKey}", async entry =>
         {
             entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(options.Value.DataExpiration);
@@ -78,7 +78,7 @@ public class SabaService(IOptions<SabaSettings> options, IMemoryCache memoryCach
     private async Task<EventMarket> GetEventAsync(GetHighLightMatchRequest request, TokenInfo token)
     {
         return await apiClient.GetDataAsync<EventMarket>(
-            $"{options.Value.Url}/sports/v1/GetEvents?query=$filter=sporttype eq {request.SportType}&$orderby=islive desc" +
+            $"{options.Value.Url}/sports/v1/GetEvents?query=$filter=sporttype eq {request.SportType} and islive eq {request.IsLive.ToString().ToLower()}" +
             $"&includeMarkets=$filter=bettype eq {request.Bettype}" +
             $"&language=en" +
             $"&from={request.From}" +
