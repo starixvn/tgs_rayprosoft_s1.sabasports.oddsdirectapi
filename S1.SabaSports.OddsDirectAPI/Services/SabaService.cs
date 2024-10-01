@@ -77,30 +77,68 @@ public class SabaService(IOptions<SabaSettings> options, IMemoryCache memoryCach
 
     private async Task<EventMarket> GetEventAsync(GetHighLightMatchRequest request, TokenInfo token)
     {
+        var marketQuery = getMarketQuery(request);
+        var query = GetQuery(request);
+
         return await apiClient.GetDataAsync<EventMarket>(
-            $"{options.Value.Url}/sports/v1/GetEvents?query=$filter=sporttype eq {request.SportType} and islive eq {request.IsLive.ToString().ToLower()}" +
-            $"&includeMarkets=$filter=bettype eq {request.Bettype}" +
+            $"{options.Value.Url}/sports/v1/GetEvents?{query}" +
+            $"{marketQuery}" +
             $"&language=en" +
             $"&from={request.From}" +
             $"&until={request.To}",
             token.Access_Token);
     }
 
-    private IEnumerable<Event> SortEvent(IEnumerable<Event> events, int sportType)
+    private string getMarketQuery(GetHighLightMatchRequest request)
     {
-        var existPopularScoreList = MatchPopularScore.PopularScores.TryGetValue(sportType, out var scores);
-        if (existPopularScoreList)
-        {
-            var averageScore = scores.Average(s => s.Value);
-            return events.OrderBy(e =>
-            {
-                var homeTeamPopularScore = scores.GetValueOrDefault($"{e.TeamInfo.HomeId}-{e.LeagueId}");
-                var awayTeamPopularScore = scores.GetValueOrDefault($"{e.TeamInfo.AwayId}-{e.LeagueId}");
-                var isLive = e.IsLive ? averageScore : 0;
-                return homeTeamPopularScore + awayTeamPopularScore + isLive;
-            });
-        }
+        var betTypeQuery = request.Bettype is not null && request.Bettype.Any() ? $"bettype in ({string.Join(',', request.Bettype)})"
+            : string.Empty;
 
-        return events;
+        var queries = new List<string>()
+        {
+            request.Bettype is not null && request.Bettype.Any() ? $"bettype in ({string.Join(',', request.Bettype)})"
+                : string.Empty
+        };
+
+        var validQuery = queries.Where(q => !string.IsNullOrEmpty(q)).ToList();
+        return validQuery.Any() ? $"&includeMarkets=$filter={string.Join(" and ", validQuery)}" : string.Empty;
+    }
+
+    private string GetQuery(GetHighLightMatchRequest request)
+    {
+        var queries = new List<string>()
+        {
+            request.IsLive is null ? string.Empty : $"islive eq {request.IsLive.ToString().ToLower()}",
+            request.SportType is not null && request.SportType.Any()
+                ? $"sporttype in ({string.Join(',', request.SportType)})"
+                : string.Empty
+        };
+
+        var validQuery = queries.Where(q => !string.IsNullOrEmpty(q)).ToList();
+
+        return validQuery.Any() ? $"query=$filter={string.Join(" and ", validQuery)}" : string.Empty;
+    }
+    private IEnumerable<Event> SortEvent(IEnumerable<Event> events, IEnumerable<int> sportType)
+    {
+        if (sportType is null || !sportType.Any())
+        {
+            return events;
+        }
+        var popularScores = sportType.Select(s =>
+        {
+            var exist = MatchPopularScore.PopularScores.TryGetValue(s, out var scores);
+            return exist ? scores : new Dictionary<string, double>();
+        }).SelectMany(dict => dict)
+            .ToLookup(pair => pair.Key, pair => pair.Value)
+            .ToDictionary(group => group.Key, group => group.First());
+
+        var averageScore = popularScores.Average(s => s.Value);
+        return events.OrderBy(e =>
+        {
+            var homeTeamPopularScore = popularScores.GetValueOrDefault($"{e.TeamInfo.HomeId}-{e.LeagueId}");
+            var awayTeamPopularScore = popularScores.GetValueOrDefault($"{e.TeamInfo.AwayId}-{e.LeagueId}");
+            var isLive = e.IsLive ? averageScore : 0;
+            return homeTeamPopularScore + awayTeamPopularScore + isLive;
+        });
     }
 }
