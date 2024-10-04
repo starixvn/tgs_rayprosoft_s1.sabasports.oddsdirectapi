@@ -24,6 +24,7 @@ public class ApiClient : IApiClient
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli
             };
             httpClient = new HttpClient(handler);
+            httpClient.DefaultRequestHeaders.Add("Access-Control-Allow-Origin", "*");
         }
     }
     public async Task<T> GetDataAsync<T>(string url, string token)
