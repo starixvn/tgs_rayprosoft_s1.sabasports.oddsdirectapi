@@ -11,4 +11,6 @@ public class SabaSettings
     public int TokenExpiration { get; init; } = default!;
 
     public int DataExpiration { get; init; } = default!;
+
+    public string Proxy { get; set; } = default!;
 }

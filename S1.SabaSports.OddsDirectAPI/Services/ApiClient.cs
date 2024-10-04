@@ -1,4 +1,6 @@
-﻿using System.Net;
+﻿using Microsoft.Extensions.Options;
+using S1.SabaSports.OddsDirectAPI.Options;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -15,17 +17,28 @@ public interface IApiClient
 public class ApiClient : IApiClient
 {
     private readonly HttpClient httpClient;
-    public ApiClient()
+    private HttpMessageHandler handler;
+
+    public ApiClient(IOptions<SabaSettings> options)
     {
-        if (httpClient == null)
+        if (string.IsNullOrEmpty(options.Value.Proxy))
         {
-            HttpClientHandler handler = new HttpClientHandler()
+            handler = new HttpClientHandler()
             {
-                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
             };
-            httpClient = new HttpClient(handler);
-            httpClient.DefaultRequestHeaders.Add("Access-Control-Allow-Origin", "*");
         }
+        else
+        {
+            var proxy = new WebProxy(options.Value.Proxy, true);
+            handler = new HttpClientHandler()
+            {
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate | DecompressionMethods.Brotli,
+                Proxy = proxy,
+                UseProxy = true,
+            };
+        }
+        httpClient = new HttpClient(handler);
     }
     public async Task<T> GetDataAsync<T>(string url, string token)
     {
